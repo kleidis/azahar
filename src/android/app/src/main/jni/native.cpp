@@ -458,7 +458,7 @@ jobject Java_io_github_lime3ds_android_NativeLibrary_downloadTitleFromNus(
 }
 
 [[maybe_unused]] bool SupportsCustomDriver() {
-    return android_get_device_api_level() >= 28 && CheckKgslPresent();
+    return android_get_device_api_level() >= 28; // && CheckKgslPresent();
 }
 
 jboolean JNICALL Java_io_github_lime3ds_android_utils_GpuDriverHelper_supportsCustomDriverLoading(
@@ -467,7 +467,7 @@ jboolean JNICALL Java_io_github_lime3ds_android_utils_GpuDriverHelper_supportsCu
     // If the KGSL device exists custom drivers can be loaded using adrenotools
     return SupportsCustomDriver();
 #else
-    return false;
+    return SupportsCustomDriver();
 #endif
 }
 
