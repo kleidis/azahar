@@ -118,6 +118,23 @@ Var DisplayName
   ${EndIf}
 !macroend
 
+Var CreateDesktopShortcut
+
+Function ShowShortcutPage
+  !insertmacro MUI_HEADER_TEXT "Create Desktop Shortcut" "Would you like to create a desktop shortcut?"
+  nsDialogs::Create 1018
+  Pop $Dialog
+  ${If} $Dialog == error
+    Abort
+  ${EndIf}
+
+  ${NSD_CreateCheckbox} 0u 0u 100% 12u "Create a desktop shortcut"
+  Pop $CreateDesktopShortcut
+  ${NSD_Check} $CreateDesktopShortcut
+
+  nsDialogs::Show
+FunctionEnd
+
 Section "Base"
   ExecWait '"$INSTDIR\uninst.exe" /S _?=$INSTDIR'
 
@@ -131,12 +148,12 @@ Section "Base"
   !insertmacro UPDATE_DISPLAYNAME
 
   ; Create start menu and desktop shortcuts
-  ; This needs to be done after Dolphin.exe is copied
   CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
   CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\$DisplayName.lnk" "$INSTDIR\lime3ds.exe"
-  CreateShortCut "$DESKTOP\$DisplayName.lnk" "$INSTDIR\lime3ds.exe"
+  ${If} ${NSD_GetState} $CreateDesktopShortcut == ${BST_CHECKED}
+    CreateShortCut "$DESKTOP\$DisplayName.lnk" "$INSTDIR\lime3ds.exe"
+  ${EndIf}
 
-  ; ??
   SetOutPath "$TEMP"
 SectionEnd
 
