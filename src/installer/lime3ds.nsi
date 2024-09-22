@@ -37,7 +37,8 @@ ShowUnInstDetails show
 !include "MultiUser.nsh"
 
 !include "MUI2.nsh"
-!include "nsDialogs.nsh"# Custom page plugin
+; Custom page plugin
+!include "nsDialogs.nsh"
 
 ; MUI Settings
 !define MUI_ICON "../../dist/lime.ico"
