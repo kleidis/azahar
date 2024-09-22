@@ -120,6 +120,14 @@ Var DisplayName
 
 Var CreateDesktopShortcut
 
+!include "nsDialogs.nsh"
+
+!define MUI_PAGE_CUSTOMFUNCTION_SHOW ShowShortcutPage
+!insertmacro MUI_PAGE_COMPONENTS
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
+
 Function ShowShortcutPage
   !insertmacro MUI_HEADER_TEXT "Create Desktop Shortcut" "Would you like to create a desktop shortcut?"
   nsDialogs::Create 1018
@@ -148,6 +156,7 @@ Section "Base"
   !insertmacro UPDATE_DISPLAYNAME
 
   ; Create start menu and desktop shortcuts
+  ; This needs to be done after Lime3DS.exe is copied
   CreateDirectory "$SMPROGRAMS\${PRODUCT_NAME}"
   CreateShortCut "$SMPROGRAMS\${PRODUCT_NAME}\$DisplayName.lnk" "$INSTDIR\lime3ds.exe"
   ${If} ${NSD_GetState} $CreateDesktopShortcut == ${BST_CHECKED}
