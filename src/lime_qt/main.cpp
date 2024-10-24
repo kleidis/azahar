@@ -3527,7 +3527,6 @@ void GMainWindow::LoadTranslation() {
 
     if (language.isEmpty()) {
 #ifdef _WIN32
-        // Use Windows API to get the active display language
         LANGID lang_id = GetUserDefaultUILanguage();
         wchar_t locale_name[LOCALE_NAME_MAX_LENGTH];
 
@@ -3545,7 +3544,7 @@ void GMainWindow::LoadTranslation() {
 #endif
     }
 
-    // Replace dashes with underscores for compatibility with translation files
+    // For compatibility with translation files
     language.replace(QLatin1Char('-'), QLatin1Char('_'));
 
     bool loaded = translator.load(language, QStringLiteral(":/languages/"));
