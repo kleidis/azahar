@@ -33,6 +33,7 @@ import io.github.lime3ds.android.contracts.OpenFileResultContract
 import io.github.lime3ds.android.databinding.ActivityEmulationBinding
 import io.github.lime3ds.android.display.ScreenAdjustmentUtil
 import io.github.lime3ds.android.features.hotkeys.HotkeyUtility
+import io.github.lime3ds.android.features.hotkeys.HotkeyFunctions
 import io.github.lime3ds.android.features.settings.model.BooleanSetting
 import io.github.lime3ds.android.features.settings.model.IntSetting
 import io.github.lime3ds.android.features.settings.model.SettingsViewModel
@@ -55,6 +56,7 @@ class EmulationActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityEmulationBinding
     private lateinit var screenAdjustmentUtil: ScreenAdjustmentUtil
+    private lateinit var hotkeyFunctions: HotkeyFunctions
     private lateinit var hotkeyUtility: HotkeyUtility
 
     private val emulationFragment: EmulationFragment
@@ -76,8 +78,9 @@ class EmulationActivity : AppCompatActivity() {
         NativeLibrary.enableAdrenoTurboMode(BooleanSetting.ADRENO_GPU_BOOST.boolean)
 
         binding = ActivityEmulationBinding.inflate(layoutInflater)
-        screenAdjustmentUtil = ScreenAdjustmentUtil(this, windowManager, settingsViewModel.settings)
-        hotkeyUtility = HotkeyUtility(screenAdjustmentUtil)
+        screenAdjustmentUtil = ScreenAdjustmentUtil(windowManager, settingsViewModel.settings)
+        hotkeyFunctions = HotkeyFunctions(settingsViewModel.settings)
+        hotkeyUtility = HotkeyUtility(screenAdjustmentUtil, hotkeyFunctions)
         setContentView(binding.root)
 
         val navHostFragment =
@@ -141,6 +144,7 @@ class EmulationActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         NativeLibrary.enableAdrenoTurboMode(false)
+        hotkeyFunctions.resetTurboSpeed()
         EmulationLifecycleUtil.clear()
         isEmulationRunning = false
         instance = null
