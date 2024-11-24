@@ -28,6 +28,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import android.graphics.drawable.Icon
+import android.widget.PopupMenu
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.CoroutineScope
@@ -47,6 +48,7 @@ import io.github.lime3ds.android.utils.GameIconUtils
 import io.github.lime3ds.android.viewmodel.GamesViewModel
 import io.github.lime3ds.android.features.settings.ui.SettingsActivity
 import io.github.lime3ds.android.features.settings.utils.SettingsFile
+import io.github.lime3ds.android.fragments.IndeterminateProgressDialogFragment
 
 class GameAdapter(private val activity: AppCompatActivity, private val inflater: LayoutInflater) :
     ListAdapter<Game, GameViewHolder>(AsyncDifferConfig.Builder(DiffCallback()).build()),
@@ -244,6 +246,38 @@ class GameAdapter(private val activity: AppCompatActivity, private val inflater:
             val action = CheatsFragmentDirections.actionGlobalCheatsFragment(holder.game.titleId)
             view.findNavController().navigate(action)
             bottomSheetDialog.dismiss()
+        }
+
+        fun showContextMenu(view: View, game: Game) {
+            val popup = PopupMenu(view.context, view)
+            val gameDir = game.path.substringBeforeLast("/")
+            popup.menuInflater.inflate(R.menu.game_context_menu, popup.menu)
+
+            popup.menu.findItem(R.id.game_context_uninstall).isEnabled = game.isInstalled
+
+            popup.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.game_context_uninstall -> {
+                        IndeterminateProgressDialogFragment.newInstance(
+                            activity,
+                            R.string.uninstalling_game,
+                            false
+                        ) {
+                            LimeApplication.documentsTree.deleteDocument(gameDir)
+                            ViewModelProvider(activity)[GamesViewModel::class.java].reloadGames(true)
+                            bottomSheetDialog.dismiss()
+                            Any()
+                        }.show(activity.supportFragmentManager, IndeterminateProgressDialogFragment.TAG)
+                        true
+                    }
+                    else -> false
+                }
+            }
+            popup.show()
+        }
+
+        bottomSheetView.findViewById<MaterialButton>(R.id.menu_button).setOnClickListener {
+            showContextMenu(it, game)
         }
 
         val bottomSheetBehavior = bottomSheetDialog.getBehavior()
