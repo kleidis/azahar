@@ -358,6 +358,20 @@
     <string name="emulation_empty_state_slot">Slot %1$d</string>
     <string name="emulation_occupied_state_slot">Slot %1$d - %2$tF %2$tR</string>
     <string name="emulation_show_fps">Show FPS</string>
+        <!-- FPS Overlay settings -->
+    <string name="fps_overlay_options">FPS Overlay</string>
+    <string name="fps_overlay_options_description">Configure what information is shown in the performance overlay</string>
+    <string name="show_fps">Show FPS</string>
+    <string name="show_fps_description">Display current frames per second</string>
+    <string name="show_speed">Show Speed</string>
+    <string name="show_speed_description">Display current emulation speed percentage</string>
+    <string name="show_app_ram_usage">Show App RAM Usage</string>
+    <string name="show_app_ram_usage_description">Display the ammount of RAM getting used by the emulator</string>
+    <string name="show_system_ram_usage">Show System RAM Usage</string>
+    <string name="show_system_ram_usage_description">Display the ammount of RAM getting sued by the system</string>
+    <string name="show_bat_temperature">Show Battery Temperature</string>
+    <string name="show_bat_temperature_description">Display current Battery temperature in Celsius and Fahrenheit</string>
+
     <string name="emulation_haptic_feedback">Haptic Feedback</string>
     <string name="emulation_overlay_options">Overlay Options</string>
     <string name="emulation_configure_controls">Configure Controls</string>

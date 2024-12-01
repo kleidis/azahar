@@ -100,6 +100,7 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
             Settings.SECTION_AUDIO -> addAudioSettings(sl)
             Settings.SECTION_DEBUG -> addDebugSettings(sl)
             Settings.SECTION_THEME -> addThemeSettings(sl)
+            Settings.SECTION_FPS_OVERLAY -> addFpsOverlaySettings(sl)
             Settings.SECTION_CUSTOM_LANDSCAPE -> addCustomLandscapeSettings(sl)
             Settings.SECTION_CUSTOM_PORTRAIT -> addCustomPortraitSettings(sl)
             else -> {
@@ -966,6 +967,14 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
             )
             add(
                 SubmenuSetting(
+                    R.string.fps_overlay_options,
+                    R.string.fps_overlay_options_description,
+                    R.drawable.ic_frames,
+                    Settings.SECTION_FPS_OVERLAY
+                )
+            )
+            add(
+                SubmenuSetting(
                     R.string.emulation_landscape_custom_layout,
                     0,
                     R.drawable.ic_fit_screen,
@@ -1255,6 +1264,61 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
                     0,
                     R.array.soundOutputModes,
                     R.array.soundOutputModeValues
+                )
+            )
+        }
+    }
+
+    private fun addFpsOverlaySettings(sl: ArrayList<SettingsItem>) {
+        settingsActivity.setToolbarTitle(settingsActivity.getString(R.string.fps_overlay_options))
+        sl.apply {
+            add(
+                SwitchSetting(
+                    BooleanSetting.SHOW_FPS,
+                    R.string.show_fps,
+                    R.string.show_fps_description,
+                    "show_fps",
+                    true
+                )
+            )
+
+            add(
+                SwitchSetting(
+                    BooleanSetting.SHOW_SPEED,
+                    R.string.show_speed,
+                    R.string.show_speed_description,
+                    "show_speed",
+                    false
+                )
+            )
+
+            add(
+                SwitchSetting(
+                    BooleanSetting.SHOW_APP_RAM_USAGE,
+                    R.string.show_app_ram_usage,
+                    R.string.show_app_ram_usage_description,
+                    "show_app_ram_usage",
+                    false
+                )
+            )
+
+            add(
+                SwitchSetting(
+                    BooleanSetting.SHOW_SYSTEM_RAM_USAGE,
+                    R.string.show_system_ram_usage,
+                    R.string.show_system_ram_usage_description,
+                    "show_system_ram_usage",
+                    false
+                )
+            )
+
+            add(
+                SwitchSetting(
+                    BooleanSetting.SHOW_BAT_TEMPERATURE,
+                    R.string.show_bat_temperature,
+                    R.string.show_bat_temperature_description,
+                    "show_bat_temperature",
+                    false
                 )
             )
         }

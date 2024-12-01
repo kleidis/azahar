@@ -30,7 +30,6 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -48,10 +47,8 @@ import androidx.navigation.fragment.navArgs
 import androidx.preference.PreferenceManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.slider.Slider
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import io.github.lime3ds.android.LimeApplication
 import io.github.lime3ds.android.EmulationNavigationDirections
+import io.github.lime3ds.android.LimeApplication
 import io.github.lime3ds.android.NativeLibrary
 import io.github.lime3ds.android.R
 import io.github.lime3ds.android.activities.EmulationActivity
@@ -61,6 +58,7 @@ import io.github.lime3ds.android.databinding.FragmentEmulationBinding
 import io.github.lime3ds.android.display.PortraitScreenLayout
 import io.github.lime3ds.android.display.ScreenAdjustmentUtil
 import io.github.lime3ds.android.display.ScreenLayout
+import io.github.lime3ds.android.features.settings.model.BooleanSetting
 import io.github.lime3ds.android.features.settings.model.IntSetting
 import io.github.lime3ds.android.features.settings.model.SettingsViewModel
 import io.github.lime3ds.android.features.settings.ui.SettingsActivity
@@ -68,16 +66,17 @@ import io.github.lime3ds.android.features.settings.utils.SettingsFile
 import io.github.lime3ds.android.model.Game
 import io.github.lime3ds.android.utils.DirectoryInitialization
 import io.github.lime3ds.android.utils.DirectoryInitialization.DirectoryInitializationState
+import io.github.lime3ds.android.utils.EmulationLifecycleUtil
 import io.github.lime3ds.android.utils.EmulationMenuSettings
 import io.github.lime3ds.android.utils.FileUtil
 import io.github.lime3ds.android.utils.GameHelper
 import io.github.lime3ds.android.utils.GameIconUtils
-import io.github.lime3ds.android.utils.EmulationLifecycleUtil
 import io.github.lime3ds.android.utils.Log
 import io.github.lime3ds.android.utils.ViewUtils
 import io.github.lime3ds.android.viewmodel.EmulationViewModel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.io.File
-import kotlin.math.roundToInt
 
 class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.FrameCallback {
     private val preferences: SharedPreferences
@@ -1120,27 +1119,41 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
             val FRAMETIME = 2
             val SPEED = 3
             perfStatsUpdater = Runnable {
+                val sb = StringBuilder()
                 val perfStats = NativeLibrary.getPerfStats()
-                val appRamUsage = File("/proc/self/statm").readLines()[0].split(' ')[1].toLong() * 4096 / 1000000
 
-                // Total Memory Usage
-                val activityManager = requireContext().getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                val memInfo = ActivityManager.MemoryInfo()
-                activityManager.getMemoryInfo(memInfo)
-                val totalRamUsage = memInfo.totalMem / 1048576L
-
-                val ramUsageText = "Ram Usage: App: $appRamUsage MB | Total: $totalRamUsage MB"
-                val batteryTemp = getBatteryTemperature()
-                val tempF = celsiusToFahrenheit(batteryTemp)
-                if (perfStats[FPS] > 0) {
-                    binding.showFpsText.text = String.format(
-                        "FPS: %d | Speed: %d%% | %s | %.1f°C/%.1f°F",
-                        (perfStats[FPS] + 0.5).toInt(),
-                        (perfStats[SPEED] * 100.0 + 0.5).toInt(),
-                        ramUsageText,
-                        batteryTemp,
-                        tempF)
+                if (BooleanSetting.SHOW_FPS.boolean) {
+                    sb.append(String.format("FPS: %d", (perfStats[FPS] + 0.5).toInt()))
                 }
+
+                if (BooleanSetting.SHOW_SPEED.boolean) {
+                    if (sb.isNotEmpty()) sb.append(" | ")
+                    sb.append(String.format("Speed: %d%%", (perfStats[SPEED] * 100.0 + 0.5).toInt()))
+                }
+
+                if (BooleanSetting.SHOW_APP_RAM_USAGE.boolean) {
+                    if (sb.isNotEmpty()) sb.append(" | ")
+                    val appRamUsage = File("/proc/self/statm").readLines()[0].split(' ')[1].toLong() * 4096 / 1000000
+                    sb.append("App RAM: $appRamUsage MB")
+                }
+
+                if (BooleanSetting.SHOW_SYSTEM_RAM_USAGE.boolean) {
+                    if (sb.isNotEmpty()) sb.append(" | ")
+                    val activityManager = requireContext().getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                    val memInfo = ActivityManager.MemoryInfo()
+                    activityManager.getMemoryInfo(memInfo)
+                    val totalRamUsage = memInfo.totalMem / 1048576L
+                    sb.append("Total RAM: $totalRamUsage MB")
+                }
+
+                if (BooleanSetting.SHOW_BAT_TEMPERATURE.boolean) {
+                    if (sb.isNotEmpty()) sb.append(" | ")
+                    val batteryTemp = getBatteryTemperature()
+                    val tempF = celsiusToFahrenheit(batteryTemp)
+                    sb.append(String.format("%.1f°C/%.1f°F", batteryTemp, tempF))
+                }
+
+                binding.showFpsText.text = sb.toString()
                 perfStatsUpdateHandler.postDelayed(perfStatsUpdater!!, 3000)
             }
             perfStatsUpdateHandler.post(perfStatsUpdater!!)
