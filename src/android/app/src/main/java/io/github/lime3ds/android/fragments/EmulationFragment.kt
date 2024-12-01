@@ -5,10 +5,14 @@
 package io.github.lime3ds.android.fragments
 
 import android.annotation.SuppressLint
+import android.app.ActivityManager
 import android.content.Context
 import android.content.DialogInterface
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.net.Uri
+import android.os.BatteryManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -26,6 +30,7 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.annotation.RequiresApi
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -71,6 +76,8 @@ import io.github.lime3ds.android.utils.EmulationLifecycleUtil
 import io.github.lime3ds.android.utils.Log
 import io.github.lime3ds.android.utils.ViewUtils
 import io.github.lime3ds.android.viewmodel.EmulationViewModel
+import java.io.File
+import kotlin.math.roundToInt
 
 class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.FrameCallback {
     private val preferences: SharedPreferences
@@ -1114,12 +1121,25 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
             val SPEED = 3
             perfStatsUpdater = Runnable {
                 val perfStats = NativeLibrary.getPerfStats()
+                val appRamUsage = File("/proc/self/statm").readLines()[0].split(' ')[1].toLong() * 4096 / 1000000
+
+                // Total Memory Usage
+                val activityManager = requireContext().getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                val memInfo = ActivityManager.MemoryInfo()
+                activityManager.getMemoryInfo(memInfo)
+                val totalRamUsage = memInfo.totalMem / 1048576L
+
+                val ramUsageText = "Ram Usage: App: $appRamUsage MB | Total: $totalRamUsage MB"
+                val batteryTemp = getBatteryTemperature()
+                val tempF = celsiusToFahrenheit(batteryTemp)
                 if (perfStats[FPS] > 0) {
                     binding.showFpsText.text = String.format(
-                        "FPS: %d Speed: %d%%",
+                        "FPS: %d | Speed: %d%% | %s | %.1f°C/%.1f°F",
                         (perfStats[FPS] + 0.5).toInt(),
-                        (perfStats[SPEED] * 100.0 + 0.5).toInt()
-                    )
+                        (perfStats[SPEED] * 100.0 + 0.5).toInt(),
+                        ramUsageText,
+                        batteryTemp,
+                        tempF)
                 }
                 perfStatsUpdateHandler.postDelayed(perfStatsUpdater!!, 3000)
             }
@@ -1131,6 +1151,16 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
             }
             binding.showFpsText.visibility = View.GONE
         }
+    }
+
+    private fun getBatteryTemperature(): Float {
+        val intent = requireContext().registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+        val temp = intent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0
+        return temp / 10.0f
+    }
+
+    private fun celsiusToFahrenheit(celsius: Float): Float {
+        return (celsius * 9 / 5) + 32
     }
 
     override fun surfaceCreated(holder: SurfaceHolder) {
