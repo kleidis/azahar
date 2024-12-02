@@ -1122,46 +1122,49 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
             perfStatsUpdater = Runnable {
                 val sb = StringBuilder()
                 val perfStats = NativeLibrary.getPerfStats()
+                if (perfStats[FPS] > 0) {
+                    if (BooleanSetting.SHOW_FPS.boolean) {
+                        sb.append(String.format("FPS: %d", (perfStats[FPS] + 0.5).toInt()))
+                    }
 
-                if (BooleanSetting.SHOW_FPS.boolean) {
-                    sb.append(String.format("FPS: %d", (perfStats[FPS] + 0.5).toInt()))
+                    if (BooleanSetting.SHOW_SPEED.boolean) {
+                        if (sb.isNotEmpty()) sb.append(" | ")
+                        sb.append(String.format("Speed: %d%%", (perfStats[SPEED] * 100.0 + 0.5).toInt()))
+                    }
+
+                    if (BooleanSetting.SHOW_APP_RAM_USAGE.boolean) {
+                        if (sb.isNotEmpty()) sb.append(" | ")
+                        val appRamUsage = File("/proc/self/statm").readLines()[0].split(' ')[1].toLong() * 4096 / 1000000
+                        sb.append("App RAM: $appRamUsage MB")
+                    }
+
+                    if (BooleanSetting.SHOW_SYSTEM_RAM_USAGE.boolean) {
+                        if (sb.isNotEmpty()) sb.append(" | ")
+                        context?.let { ctx ->
+                            val activityManager = ctx.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                            val memInfo = ActivityManager.MemoryInfo()
+                            activityManager.getMemoryInfo(memInfo)
+                            val totalRamUsage = memInfo.totalMem / 1048576L
+                            sb.append("Total RAM: $totalRamUsage MB")
+                        }
+                    }
+
+                    if (BooleanSetting.SHOW_BAT_TEMPERATURE.boolean) {
+                        if (sb.isNotEmpty()) sb.append(" | ")
+                        val batteryTemp = getBatteryTemperature()
+                        val tempF = celsiusToFahrenheit(batteryTemp)
+                        sb.append(String.format("%.1f°C/%.1f°F", batteryTemp, tempF))
+                    }
+
+                    if (BooleanSetting.OVERLAY_BACKGROUND.boolean) {
+                        binding.showPerfOverlayText.setBackgroundResource(R.color.lime_transparent_black_50)
+                    } else {
+                        binding.showPerfOverlayText.setBackgroundResource(0)
+                    }
+
+                    binding.showPerfOverlayText.text = sb.toString()
                 }
-
-                if (BooleanSetting.SHOW_SPEED.boolean) {
-                    if (sb.isNotEmpty()) sb.append(" | ")
-                    sb.append(String.format("Speed: %d%%", (perfStats[SPEED] * 100.0 + 0.5).toInt()))
-                }
-
-                if (BooleanSetting.SHOW_APP_RAM_USAGE.boolean) {
-                    if (sb.isNotEmpty()) sb.append(" | ")
-                    val appRamUsage = File("/proc/self/statm").readLines()[0].split(' ')[1].toLong() * 4096 / 1000000
-                    sb.append("App RAM: $appRamUsage MB")
-                }
-
-                if (BooleanSetting.SHOW_SYSTEM_RAM_USAGE.boolean) {
-                    if (sb.isNotEmpty()) sb.append(" | ")
-                    val activityManager = requireContext().getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-                    val memInfo = ActivityManager.MemoryInfo()
-                    activityManager.getMemoryInfo(memInfo)
-                    val totalRamUsage = memInfo.totalMem / 1048576L
-                    sb.append("Total RAM: $totalRamUsage MB")
-                }
-
-                if (BooleanSetting.SHOW_BAT_TEMPERATURE.boolean) {
-                    if (sb.isNotEmpty()) sb.append(" | ")
-                    val batteryTemp = getBatteryTemperature()
-                    val tempF = celsiusToFahrenheit(batteryTemp)
-                    sb.append(String.format("%.1f°C/%.1f°F", batteryTemp, tempF))
-                }
-
-                if (BooleanSetting.OVERLAY_BACKGROUND.boolean) {
-                    binding.showPerfOverlayText.setBackgroundResource(R.color.lime_transparent_black_50)
-                } else {
-                    binding.showPerfOverlayText.setBackgroundResource(0)
-                }
-
-                binding.showPerfOverlayText.text = sb.toString()
-                perfStatsUpdateHandler.postDelayed(perfStatsUpdater!!, 3000)
+                perfStatsUpdateHandler.postDelayed(perfStatsUpdater!!, 800)
             }
             perfStatsUpdateHandler.post(perfStatsUpdater!!)
 
@@ -1208,10 +1211,16 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
     }
 
     private fun getBatteryTemperature(): Float {
-        val intent = requireContext().registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-        val temp = intent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0
-        return temp / 10.0f
+        return try {
+            val intent = requireContext().registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+                ?: return 0f
+            val temp = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0)
+            temp / 10.0f
+        } catch (e: Exception) {
+            0f
+        }
     }
+
 
     private fun celsiusToFahrenheit(celsius: Float): Float {
         return (celsius * 9 / 5) + 32
