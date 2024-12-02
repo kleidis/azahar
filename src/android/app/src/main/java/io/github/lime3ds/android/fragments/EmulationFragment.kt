@@ -453,6 +453,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
         Choreographer.getInstance().postFrameCallback(this)
         if (NativeLibrary.isRunning()) {
             NativeLibrary.unPauseEmulation()
+            updateshowPerfStatsOvelrayOverlay()
             return
         }
 

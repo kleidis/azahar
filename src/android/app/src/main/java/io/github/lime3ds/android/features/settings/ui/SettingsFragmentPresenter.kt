@@ -42,6 +42,7 @@ import io.github.lime3ds.android.features.settings.model.view.SwitchSetting
 import io.github.lime3ds.android.features.settings.utils.SettingsFile
 import io.github.lime3ds.android.fragments.ResetSettingsDialogFragment
 import io.github.lime3ds.android.utils.BirthdayMonth
+import io.github.lime3ds.android.utils.EmulationMenuSettings
 import io.github.lime3ds.android.utils.GpuDriverHelper
 import io.github.lime3ds.android.utils.Log
 import io.github.lime3ds.android.utils.SystemSaveGame
@@ -1272,6 +1273,30 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
     private fun addStatsOverlaySettings(sl: ArrayList<SettingsItem>) {
         settingsActivity.setToolbarTitle(settingsActivity.getString(R.string.stats_overlay_options))
         sl.apply {
+
+            add(HeaderSetting(R.string.stats_overlay_customization))
+
+            add(
+                SwitchSetting(
+                    object : AbstractBooleanSetting {
+                        override val key = "EmulationMenuSettings_showPerfStatsOvelray"
+                        override val section = Settings.SECTION_LAYOUT
+                        override val defaultValue = false
+                        override var boolean: Boolean
+                            get() = EmulationMenuSettings.showPerfStatsOvelray
+                            set(value) { EmulationMenuSettings.showPerfStatsOvelray = value }
+                        override val isRuntimeEditable = true
+                        override val valueAsString: String get() = boolean.toString()
+                    },
+                    R.string.stats_overlay_options,
+                    0,
+                    "EmulationMenuSettings_showPerfStatsOvelray",
+                    false
+                )
+            )
+
+            add(HeaderSetting(R.string.stats_overlay_items))
+
             add(
                 SwitchSetting(
                     BooleanSetting.SHOW_FPS,

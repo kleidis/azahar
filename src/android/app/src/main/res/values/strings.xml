@@ -358,8 +358,11 @@
     <string name="emulation_empty_state_slot">Slot %1$d</string>
     <string name="emulation_occupied_state_slot">Slot %1$d - %2$tF %2$tR</string>
     <string name="emulation_show_perf_overlay">Show Performance Stats</string>
-        <!-- FPS Overlay settings -->
-    <string name="stats_overlay_options">Stats Overlay</string>
+
+    <!-- FPS Overlay settings -->
+    <string name="stats_overlay_customization">Customization</string>
+    <string name="stats_overlay_items">Visibility</string>
+    <string name="stats_overlay_options">Performance Stats Overlay</string>
     <string name="stats_overlay_options_description">Configure what information is shown in the performance stats overlay</string>
     <string name="show_fps">Show FPS</string>
     <string name="show_fps_description">Display current frames per second</string>
