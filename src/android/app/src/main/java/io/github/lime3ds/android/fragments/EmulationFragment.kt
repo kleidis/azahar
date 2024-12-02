@@ -1156,6 +1156,12 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
                     sb.append(String.format("%.1f°C/%.1f°F", batteryTemp, tempF))
                 }
 
+                if (BooleanSetting.OVERLAY_BACKGROUND.boolean) {
+                    binding.showPerfOverlayText.setBackgroundResource(R.color.lime_transparent_black_50)
+                } else {
+                    binding.showPerfOverlayText.setBackgroundResource(0)
+                }
+
                 binding.showPerfOverlayText.text = sb.toString()
                 perfStatsUpdateHandler.postDelayed(perfStatsUpdater!!, 3000)
             }

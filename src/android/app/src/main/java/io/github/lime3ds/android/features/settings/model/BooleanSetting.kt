@@ -20,7 +20,8 @@ enum class BooleanSetting(
     SHOW_SPEED("show_speed", Settings.SECTION_LAYOUT, false),
     SHOW_APP_RAM_USAGE("show_app_ram_usage", Settings.SECTION_LAYOUT, false),
     SHOW_SYSTEM_RAM_USAGE("show_system_ram_usage", Settings.SECTION_LAYOUT, false),
-    SHOW_BAT_TEMPERATURE("show_bat_temperature", Settings.SECTION_LAYOUT, false),;
+    SHOW_BAT_TEMPERATURE("show_bat_temperature", Settings.SECTION_LAYOUT, false),
+    OVERLAY_BACKGROUND("overlay_background", Settings.SECTION_LAYOUT, false),;
 
     override var boolean: Boolean = defaultValue
 

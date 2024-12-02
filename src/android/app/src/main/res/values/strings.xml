@@ -382,6 +382,8 @@
     <string name="overlay_position_bottom_right">Bottom Right</string>
     <string name="overlay_position_center_top">Center Top</string>
     <string name="overlay_position_center_bottom">Center Bottom</string>
+    <string name="overlay_background">Overlay Background</string>
+    <string name="overlay_background_description">Adds a bakcgorund behind the ovelry for easier reading</string>
 
     <string name="emulation_haptic_feedback">Haptic Feedback</string>
     <string name="emulation_overlay_options">Overlay Options</string>

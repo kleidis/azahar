@@ -1296,6 +1296,16 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
             )
 
             add(
+                SwitchSetting(
+                    BooleanSetting.OVERLAY_BACKGROUND,
+                    R.string.overlay_background,
+                    R.string.overlay_background_description,
+                    "overlay_background",
+                    false
+                )
+            )
+
+            add(
                 SingleChoiceSetting(
                     IntSetting.PERF_OVERLAY_POSITION,
                     R.string.overlay_position,
@@ -1304,6 +1314,7 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
                     R.array.statsPositionValues,
                 )
             )
+
 
             add(HeaderSetting(R.string.stats_overlay_items))
 

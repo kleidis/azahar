@@ -200,6 +200,7 @@
     <color name="lime_surfaceTint_gray">#9E9E9E</color>
 
     <!-- Common Colors Across All Themes -->
+    <color name="lime_transparent_black_50">#80000000</color>
     <color name="lime_outlineVariant">#C6C5D0</color>
     <color name="lime_error">#BA1A1A</color>
     <color name="lime_errorContainer">#FFDAD6</color>
