@@ -434,8 +434,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
                 }
             }
         }
-
-        setInsets()
     }
 
     fun isDrawerOpen(): Boolean {
@@ -1184,6 +1182,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
         when (position) {
             0 -> {
                 params.gravity = (Gravity.TOP or Gravity.START)
+                params.setMargins(resources.getDimensionPixelSize(R.dimen.spacing_large), 0, 0, 0)
             }
             1 -> {
                 params.gravity = (Gravity.TOP or Gravity.CENTER_HORIZONTAL)
@@ -1194,6 +1193,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
             }
             3 -> {
                 params.gravity = (Gravity.BOTTOM or Gravity.START)
+                params.setMargins(resources.getDimensionPixelSize(R.dimen.spacing_large), 0, 0, 0)
             }
             4 -> {
                 params.gravity = (Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL)
@@ -1234,42 +1234,6 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
     override fun doFrame(frameTimeNanos: Long) {
         Choreographer.getInstance().postFrameCallback(this)
         NativeLibrary.doFrame()
-    }
-
-    private fun setInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(
-            binding.inGameMenu
-        ) { v: View, windowInsets: WindowInsetsCompat ->
-            val cutInsets: Insets = windowInsets.getInsets(WindowInsetsCompat.Type.displayCutout())
-            var left = 0
-            var right = 0
-            if (ViewCompat.getLayoutDirection(v) == ViewCompat.LAYOUT_DIRECTION_LTR) {
-                left = cutInsets.left
-            } else {
-                right = cutInsets.right
-            }
-
-            v.setPadding(left, cutInsets.top, right, 0)
-
-            // Ensure FPS text doesn't get cut off by rounded display corners
-            val sidePadding = resources.getDimensionPixelSize(R.dimen.spacing_large)
-            if (cutInsets.left == 0) {
-                binding.showPerfOverlayText.setPadding(
-                    sidePadding,
-                    cutInsets.top,
-                    cutInsets.right,
-                    cutInsets.bottom
-                )
-            } else {
-                binding.showPerfOverlayText.setPadding(
-                    cutInsets.left,
-                    cutInsets.top,
-                    cutInsets.right,
-                    cutInsets.bottom
-                )
-            }
-            windowInsets
-        }
     }
 
     private class EmulationState(private val gamePath: String) {
