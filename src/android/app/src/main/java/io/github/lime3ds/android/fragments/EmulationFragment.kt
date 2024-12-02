@@ -180,8 +180,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
             binding.surfaceInputOverlay.setIsInEditMode(false)
         }
 
-        // Show/hide the "Show FPS" overlay
-        updateShowFpsOverlay()
+        // Show/hide the "Stats" overlay
+        updateshowPerfStatsOvelrayOverlay()
 
         binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
         binding.drawerLayout.addDrawerListener(object : DrawerListener {
@@ -608,7 +608,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
 
         popupMenu.menu.apply {
             findItem(R.id.menu_show_overlay).isChecked = EmulationMenuSettings.showOverlay
-            findItem(R.id.menu_show_fps).isChecked = EmulationMenuSettings.showFps
+            findItem(R.id.menu_show_perf_overlay).isChecked = EmulationMenuSettings.showPerfStatsOvelray
             findItem(R.id.menu_haptic_feedback).isChecked = EmulationMenuSettings.hapticFeedback
             findItem(R.id.menu_emulation_joystick_rel_center).isChecked =
                 EmulationMenuSettings.joystickRelCenter
@@ -624,15 +624,15 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
                     true
                 }
 
-                R.id.menu_show_fps -> {
-                    EmulationMenuSettings.showFps = !EmulationMenuSettings.showFps
-                    updateShowFpsOverlay()
+                R.id.menu_show_perf_overlay -> {
+                    EmulationMenuSettings.showPerfStatsOvelray = !EmulationMenuSettings.showPerfStatsOvelray
+                    updateshowPerfStatsOvelrayOverlay()
                     true
                 }
 
                 R.id.menu_haptic_feedback -> {
                     EmulationMenuSettings.hapticFeedback = !EmulationMenuSettings.hapticFeedback
-                    updateShowFpsOverlay()
+                    updateshowPerfStatsOvelrayOverlay()
                     true
                 }
 
@@ -1112,8 +1112,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
         binding.surfaceInputOverlay.resetButtonPlacement()
     }
 
-    fun updateShowFpsOverlay() {
-        if (EmulationMenuSettings.showFps) {
+    fun updateshowPerfStatsOvelrayOverlay() {
+        if (EmulationMenuSettings.showPerfStatsOvelray) {
             val SYSTEM_FPS = 0
             val FPS = 1
             val FRAMETIME = 2
@@ -1153,16 +1153,16 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
                     sb.append(String.format("%.1f°C/%.1f°F", batteryTemp, tempF))
                 }
 
-                binding.showFpsText.text = sb.toString()
+                binding.showPerfOverlayText.text = sb.toString()
                 perfStatsUpdateHandler.postDelayed(perfStatsUpdater!!, 3000)
             }
             perfStatsUpdateHandler.post(perfStatsUpdater!!)
-            binding.showFpsText.visibility = View.VISIBLE
+            binding.showPerfOverlayText.visibility = View.VISIBLE
         } else {
             if (perfStatsUpdater != null) {
                 perfStatsUpdateHandler.removeCallbacks(perfStatsUpdater!!)
             }
-            binding.showFpsText.visibility = View.GONE
+            binding.showPerfOverlayText.visibility = View.GONE
         }
     }
 
@@ -1213,14 +1213,14 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
             // Ensure FPS text doesn't get cut off by rounded display corners
             val sidePadding = resources.getDimensionPixelSize(R.dimen.spacing_large)
             if (cutInsets.left == 0) {
-                binding.showFpsText.setPadding(
+                binding.showPerfOverlayText.setPadding(
                     sidePadding,
                     cutInsets.top,
                     cutInsets.right,
                     cutInsets.bottom
                 )
             } else {
-                binding.showFpsText.setPadding(
+                binding.showPerfOverlayText.setPadding(
                     cutInsets.left,
                     cutInsets.top,
                     cutInsets.right,

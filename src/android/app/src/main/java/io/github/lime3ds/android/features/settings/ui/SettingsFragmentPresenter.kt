@@ -100,7 +100,7 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
             Settings.SECTION_AUDIO -> addAudioSettings(sl)
             Settings.SECTION_DEBUG -> addDebugSettings(sl)
             Settings.SECTION_THEME -> addThemeSettings(sl)
-            Settings.SECTION_FPS_OVERLAY -> addFpsOverlaySettings(sl)
+            Settings.SECTION_STATS_OVERLAY -> addStatsOverlaySettings(sl)
             Settings.SECTION_CUSTOM_LANDSCAPE -> addCustomLandscapeSettings(sl)
             Settings.SECTION_CUSTOM_PORTRAIT -> addCustomPortraitSettings(sl)
             else -> {
@@ -967,10 +967,10 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
             )
             add(
                 SubmenuSetting(
-                    R.string.fps_overlay_options,
-                    R.string.fps_overlay_options_description,
+                    R.string.stats_overlay_options,
+                    R.string.stats_overlay_options_description,
                     R.drawable.ic_frames,
-                    Settings.SECTION_FPS_OVERLAY
+                    Settings.SECTION_STATS_OVERLAY
                 )
             )
             add(
@@ -1269,8 +1269,8 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
         }
     }
 
-    private fun addFpsOverlaySettings(sl: ArrayList<SettingsItem>) {
-        settingsActivity.setToolbarTitle(settingsActivity.getString(R.string.fps_overlay_options))
+    private fun addStatsOverlaySettings(sl: ArrayList<SettingsItem>) {
+        settingsActivity.setToolbarTitle(settingsActivity.getString(R.string.stats_overlay_options))
         sl.apply {
             add(
                 SwitchSetting(
