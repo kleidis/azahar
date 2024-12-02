@@ -20,6 +20,7 @@ import android.os.SystemClock
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Choreographer
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.Surface
@@ -30,6 +31,7 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.Insets
 import androidx.core.view.ViewCompat
@@ -1158,6 +1160,10 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
                 perfStatsUpdateHandler.postDelayed(perfStatsUpdater!!, 3000)
             }
             perfStatsUpdateHandler.post(perfStatsUpdater!!)
+
+            val position = IntSetting.PERF_OVERLAY_POSITION.int
+            updatePerfStatsPosition(position)
+
             binding.showPerfOverlayText.visibility = View.VISIBLE
         } else {
             if (perfStatsUpdater != null) {
@@ -1165,6 +1171,34 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
             }
             binding.showPerfOverlayText.visibility = View.GONE
         }
+    }
+
+    private fun updatePerfStatsPosition(position: Int) {
+        val params = binding.showPerfOverlayText.layoutParams as CoordinatorLayout.LayoutParams
+        when (position) {
+            0 -> {
+                params.gravity = (Gravity.TOP or Gravity.START)
+            }
+            1 -> {
+                params.gravity = (Gravity.TOP or Gravity.CENTER_HORIZONTAL)
+            }
+            2 -> {
+                params.gravity = (Gravity.TOP or Gravity.END)
+                params.setMargins(0, 0, resources.getDimensionPixelSize(R.dimen.spacing_large), 0)
+            }
+            3 -> {
+                params.gravity = (Gravity.BOTTOM or Gravity.START)
+            }
+            4 -> {
+                params.gravity = (Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL)
+            }
+            5 -> {
+                params.gravity = (Gravity.BOTTOM or Gravity.END)
+                params.setMargins(0, 0, resources.getDimensionPixelSize(R.dimen.spacing_large), 0)
+            }
+        }
+
+        binding.showPerfOverlayText.layoutParams = params
     }
 
     private fun getBatteryTemperature(): Float {

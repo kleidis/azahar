@@ -374,6 +374,14 @@
     <string name="show_system_ram_usage_description">Display the ammount of RAM getting sued by the system</string>
     <string name="show_bat_temperature">Show Battery Temperature</string>
     <string name="show_bat_temperature_description">Display current Battery temperature in Celsius and Fahrenheit</string>
+    <string name="overlay_position">Overlay Position</string>
+    <string name="overlay_position_description">Choose where the performance stats overlay is displayed on the screen</string>
+    <string name="overlay_position_top_left">Top Left</string>
+    <string name="overlay_position_top_right">Top Right</string>
+    <string name="overlay_position_bottom_left">Bottom Left</string>
+    <string name="overlay_position_bottom_right">Bottom Right</string>
+    <string name="overlay_position_center_top">Center Top</string>
+    <string name="overlay_position_center_bottom">Center Bottom</string>
 
     <string name="emulation_haptic_feedback">Haptic Feedback</string>
     <string name="emulation_overlay_options">Overlay Options</string>
