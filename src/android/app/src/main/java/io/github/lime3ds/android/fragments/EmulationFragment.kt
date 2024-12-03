@@ -185,6 +185,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
         // Show/hide the "Stats" overlay
         updateshowPerfStatsOvelrayOverlay()
 
+        val position = IntSetting.PERF_OVERLAY_POSITION.int
+        updatePerfStatsPosition(position)
+
         binding.drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
         binding.drawerLayout.addDrawerListener(object : DrawerListener {
             override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
@@ -453,7 +456,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
         Choreographer.getInstance().postFrameCallback(this)
         if (NativeLibrary.isRunning()) {
             NativeLibrary.unPauseEmulation()
-            updateshowPerfStatsOvelrayOverlay()
+            val position = IntSetting.PERF_OVERLAY_POSITION.int
+            updatePerfStatsPosition(position)
             return
         }
 
@@ -1164,12 +1168,9 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
 
                     binding.showPerfOverlayText.text = sb.toString()
                 }
-                perfStatsUpdateHandler.postDelayed(perfStatsUpdater!!, 800)
+                perfStatsUpdateHandler.postDelayed(perfStatsUpdater!!, 3000)
             }
             perfStatsUpdateHandler.post(perfStatsUpdater!!)
-
-            val position = IntSetting.PERF_OVERLAY_POSITION.int
-            updatePerfStatsPosition(position)
 
             binding.showPerfOverlayText.visibility = View.VISIBLE
         } else {
