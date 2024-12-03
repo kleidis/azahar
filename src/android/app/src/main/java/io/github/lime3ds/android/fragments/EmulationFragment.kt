@@ -1139,7 +1139,7 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
                     if (BooleanSetting.SHOW_APP_RAM_USAGE.boolean) {
                         if (sb.isNotEmpty()) sb.append(" | ")
                         val appRamUsage = File("/proc/self/statm").readLines()[0].split(' ')[1].toLong() * 4096 / 1000000
-                        sb.append("App RAM: $appRamUsage MB")
+                        sb.append("Process RAM: $appRamUsage MB")
                     }
 
                     if (BooleanSetting.SHOW_SYSTEM_RAM_USAGE.boolean) {
@@ -1148,8 +1148,8 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
                             val activityManager = ctx.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
                             val memInfo = ActivityManager.MemoryInfo()
                             activityManager.getMemoryInfo(memInfo)
-                            val totalRamUsage = memInfo.totalMem / 1048576L
-                            sb.append("Total RAM: $totalRamUsage MB")
+                            val usedRamMB = (memInfo.totalMem - memInfo.availMem) / 1048576L
+                            sb.append("RAM: $usedRamMB MB")
                         }
                     }
 
