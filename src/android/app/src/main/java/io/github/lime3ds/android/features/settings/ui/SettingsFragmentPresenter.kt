@@ -1288,7 +1288,7 @@ class SettingsFragmentPresenter(private val fragmentView: SettingsFragmentView) 
                         override val isRuntimeEditable = true
                         override val valueAsString: String get() = boolean.toString()
                     },
-                    R.string.stats_overlay_options,
+                    R.string.enable_stats_overlay_,
                     0,
                     "EmulationMenuSettings_showPerfStatsOvelray",
                     false
