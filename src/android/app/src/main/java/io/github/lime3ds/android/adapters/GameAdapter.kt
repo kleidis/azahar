@@ -11,6 +11,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.content.Context
+import android.content.Intent
 import android.widget.TextView
 import android.widget.ImageView
 import android.widget.Toast
@@ -28,6 +29,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import android.graphics.drawable.Icon
+import android.util.Log
 import android.widget.PopupMenu
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
@@ -49,6 +51,7 @@ import io.github.lime3ds.android.viewmodel.GamesViewModel
 import io.github.lime3ds.android.features.settings.ui.SettingsActivity
 import io.github.lime3ds.android.features.settings.utils.SettingsFile
 import io.github.lime3ds.android.fragments.IndeterminateProgressDialogFragment
+import io.github.lime3ds.android.utils.DirectoryInitialization.userDirectory
 
 class GameAdapter(private val activity: AppCompatActivity, private val inflater: LayoutInflater) :
     ListAdapter<Game, GameViewHolder>(AsyncDifferConfig.Builder(DiffCallback()).build()),
@@ -248,12 +251,27 @@ class GameAdapter(private val activity: AppCompatActivity, private val inflater:
             bottomSheetDialog.dismiss()
         }
 
+        fun getSaveDir(): DocumentFile? {
+            val root = DocumentFile.fromTreeUri(LimeApplication.appContext, Uri.parse(userDirectory)) ?: return null
+
+            return root.findFile("sdmc")
+                ?.findFile("Nintendo 3DS")
+                ?.findFile("00000000000000000000000000000000")
+                ?.findFile("00000000000000000000000000000000")
+                ?.findFile("title")
+                ?.findFile(String.format("%016x", game.titleId).lowercase().substring(0, 8))
+                ?.findFile(String.format("%016x", game.titleId).lowercase().substring(8))
+                ?.findFile("data")
+                ?.findFile("00000001")
+        }
+
         fun showContextMenu(view: View, game: Game) {
             val popup = PopupMenu(view.context, view)
             val gameDir = game.path.substringBeforeLast("/")
             popup.menuInflater.inflate(R.menu.game_context_menu, popup.menu)
 
             popup.menu.findItem(R.id.game_context_uninstall).isEnabled = game.isInstalled
+            popup.menu.findItem(R.id.game_context_open_save_dir).isEnabled = getSaveDir() != null
 
             popup.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
@@ -270,9 +288,21 @@ class GameAdapter(private val activity: AppCompatActivity, private val inflater:
                         }.show(activity.supportFragmentManager, IndeterminateProgressDialogFragment.TAG)
                         true
                     }
+                    R.id.game_context_open_save_dir -> {
+                        val saveDir = getSaveDir()
+                        if (saveDir != null) {
+                            val intent = Intent(Intent.ACTION_VIEW).apply {
+                                data = saveDir.uri
+                                flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+                            }
+                            context.startActivity(intent)
+                        }
+                        true
+                    }
                     else -> false
                 }
             }
+
             popup.show()
         }
 
