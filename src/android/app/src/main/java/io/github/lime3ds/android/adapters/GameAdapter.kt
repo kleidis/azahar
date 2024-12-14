@@ -65,7 +65,7 @@ class GameAdapter(
             is GameListItem.Separator -> favoriteGameView
         }
     }
--
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
             gameView -> {
