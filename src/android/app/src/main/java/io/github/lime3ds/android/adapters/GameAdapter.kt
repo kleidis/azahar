@@ -168,7 +168,15 @@ class GameAdapter(private val activity: AppCompatActivity, private val inflater:
                 View.VISIBLE
             }
 
+            // Add favorite icon
+            val preferences = PreferenceManager.getDefaultSharedPreferences(binding.root.context)
+            val isFavorite = preferences.getBoolean("favorite_${game.titleId}", false)
+
+            binding.favoriteIcon.setImageResource(R.drawable.ic_star)
+
+
             binding.textGameTitle.text = game.title
+            binding.favoriteIcon.visibility = if (isFavorite) View.VISIBLE else View.GONE
             binding.textCompany.text = game.company
             binding.textGameRegion.text = game.regions
 
@@ -246,6 +254,29 @@ class GameAdapter(private val activity: AppCompatActivity, private val inflater:
             bottomSheetDialog.dismiss()
         }
 
+        bottomSheetView.findViewById<MaterialButton>(R.id.favorite_game).apply {
+            val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+            val isFavorite = preferences.getBoolean("favorite_${game.titleId}", false)
+
+            setIconResource(if (isFavorite) R.drawable.ic_star else R.drawable.ic_star_frame)
+
+            setOnClickListener {
+                val newFavoriteState = !isFavorite
+                preferences.edit()
+                    .putBoolean("favorite_${game.titleId}", newFavoriteState)
+                    .apply()
+                setIconResource(if (newFavoriteState) R.drawable.ic_star else R.drawable.ic_star_frame)
+
+                val position = currentList.indexOf(game)
+                if (position != -1) {
+                    notifyItemChanged(position)
+                }
+
+                submitList(currentList.sortedWith(gameComparator))
+                bottomSheetDialog.dismiss()
+            }
+        }
+
         val bottomSheetBehavior = bottomSheetDialog.getBehavior()
         bottomSheetBehavior.skipCollapsed = true
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
@@ -266,5 +297,14 @@ class GameAdapter(private val activity: AppCompatActivity, private val inflater:
         override fun areContentsTheSame(oldItem: Game, newItem: Game): Boolean {
             return oldItem == newItem
         }
+    }
+
+    private val gameComparator = compareBy<Game> { game ->
+        val preferences = PreferenceManager.getDefaultSharedPreferences(LimeApplication.appContext)
+        !preferences.getBoolean("favorite_${game.titleId}", false) // Favorites first
+    }.thenBy { it.title.lowercase() } // Then alphabetically
+
+    override fun submitList(list: List<Game>?) {
+        super.submitList(list?.sortedWith(gameComparator))
     }
 }
