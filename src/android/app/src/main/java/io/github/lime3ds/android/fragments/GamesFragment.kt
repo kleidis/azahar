@@ -151,10 +151,10 @@ class GamesFragment : Fragment() {
     private fun setAdapter(games: List<Game>) {
         val preferences = PreferenceManager.getDefaultSharedPreferences(LimeApplication.appContext)
         if (preferences.getBoolean(Settings.PREF_SHOW_HOME_APPS, false)) {
-            (binding.gridGames.adapter as GameAdapter).submitList(games)
+            (binding.gridGames.adapter as GameAdapter).submitGameList(games)
         } else {
             val filteredList = games.filter { !it.isSystemTitle }
-            (binding.gridGames.adapter as GameAdapter).submitList(filteredList)
+            (binding.gridGames.adapter as GameAdapter).submitGameList(filteredList)
         }
     }
 

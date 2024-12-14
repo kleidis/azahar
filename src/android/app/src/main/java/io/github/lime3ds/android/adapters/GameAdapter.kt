@@ -11,12 +11,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.content.Context
+import android.content.pm.ShortcutInfo
 import android.widget.TextView
 import android.widget.ImageView
 import android.widget.Toast
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.Bitmap
-import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
@@ -39,32 +38,54 @@ import com.google.android.material.button.MaterialButton
 import io.github.lime3ds.android.HomeNavigationDirections
 import io.github.lime3ds.android.LimeApplication
 import io.github.lime3ds.android.R
-import io.github.lime3ds.android.adapters.GameAdapter.GameViewHolder
 import io.github.lime3ds.android.databinding.CardGameBinding
 import io.github.lime3ds.android.features.cheats.ui.CheatsFragmentDirections
 import io.github.lime3ds.android.model.Game
 import io.github.lime3ds.android.utils.GameIconUtils
 import io.github.lime3ds.android.viewmodel.GamesViewModel
-import io.github.lime3ds.android.features.settings.ui.SettingsActivity
-import io.github.lime3ds.android.features.settings.utils.SettingsFile
 
-class GameAdapter(private val activity: AppCompatActivity, private val inflater: LayoutInflater) :
-    ListAdapter<Game, GameViewHolder>(AsyncDifferConfig.Builder(DiffCallback()).build()),
+sealed class GameListItem {
+    data class GameItem(val game: Game) : GameListItem()
+    data object Separator : GameListItem()
+}
+
+class GameAdapter(
+    private val activity: AppCompatActivity,
+    private val layoutInflater: LayoutInflater
+) : ListAdapter<GameListItem, RecyclerView.ViewHolder>(AsyncDifferConfig.Builder(DiffCallback()).build()),
     View.OnClickListener, View.OnLongClickListener {
+
+    private val gameView = 0
+    private val favoriteGameView = 1
     private var lastClickTime = 0L
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): GameViewHolder {
-        // Create a new view.
-        val binding = CardGameBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        binding.cardGame.setOnClickListener(this)
-        binding.cardGame.setOnLongClickListener(this)
-
-        // Use that view to create a ViewHolder.
-        return GameViewHolder(binding)
+    override fun getItemViewType(position: Int): Int {
+        return when (currentList[position]) {
+            is GameListItem.GameItem -> gameView
+            is GameListItem.Separator -> favoriteGameView
+        }
+    }
+-
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            gameView -> {
+                val binding = CardGameBinding.inflate(layoutInflater, parent, false)
+                binding.cardGame.setOnClickListener(this)
+                binding.cardGame.setOnLongClickListener(this)
+                GameViewHolder(binding)
+            }
+            favoriteGameView -> {
+                val view = layoutInflater.inflate(R.layout.list_item_separator, parent, false)
+                SeparatorViewHolder(view)
+            }
+            else -> throw IllegalArgumentException("Invalid view type")
+        }
     }
 
-    override fun onBindViewHolder(holder: GameViewHolder, position: Int) {
-        holder.bind(currentList[position])
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (holder) {
+            is GameViewHolder -> holder.bind((currentList[position] as GameListItem.GameItem).game)
+        }
     }
 
     override fun getItemCount(): Int = currentList.size
@@ -213,7 +234,7 @@ class GameAdapter(private val activity: AppCompatActivity, private val inflater:
     }
 
     private fun showAboutGameDialog(context: Context, game: Game, holder: GameViewHolder, view: View) {
-        val bottomSheetView = inflater.inflate(R.layout.dialog_about_game, null)
+        val bottomSheetView = layoutInflater.inflate(R.layout.dialog_about_game, null)
 
         val bottomSheetDialog = BottomSheetDialog(context)
         bottomSheetDialog.setContentView(bottomSheetView)
@@ -267,12 +288,13 @@ class GameAdapter(private val activity: AppCompatActivity, private val inflater:
                     .apply()
                 setIconResource(if (newFavoriteState) R.drawable.ic_star else R.drawable.ic_star_frame)
 
-                val position = currentList.indexOf(game)
+                val position = currentList.indexOf(GameListItem.GameItem(game))
                 if (position != -1) {
                     notifyItemChanged(position)
                 }
 
-                submitList(currentList.sortedWith(gameComparator))
+                val sortedGames = currentList.filterIsInstance<GameListItem.GameItem>().map { it.game }
+                submitGameList(sortedGames)
                 bottomSheetDialog.dismiss()
             }
         }
@@ -289,12 +311,19 @@ class GameAdapter(private val activity: AppCompatActivity, private val inflater:
             .noneMatch { extension == it.lowercase() }
     }
 
-    private class DiffCallback : DiffUtil.ItemCallback<Game>() {
-        override fun areItemsTheSame(oldItem: Game, newItem: Game): Boolean {
-            return oldItem.titleId == newItem.titleId
+    private class DiffCallback : DiffUtil.ItemCallback<GameListItem>() {
+        override fun areItemsTheSame(oldItem: GameListItem, newItem: GameListItem): Boolean {
+            if (oldItem::class != newItem::class) return false
+            return when (oldItem) {
+                is GameListItem.GameItem -> {
+                    val newGame = (newItem as GameListItem.GameItem)
+                    oldItem.game.titleId == newGame.game.titleId
+                }
+                GameListItem.Separator -> true
+            }
         }
 
-        override fun areContentsTheSame(oldItem: Game, newItem: Game): Boolean {
+        override fun areContentsTheSame(oldItem: GameListItem, newItem: GameListItem): Boolean {
             return oldItem == newItem
         }
     }
@@ -304,7 +333,32 @@ class GameAdapter(private val activity: AppCompatActivity, private val inflater:
         !preferences.getBoolean("favorite_${game.titleId}", false) // Favorites first
     }.thenBy { it.title.lowercase() } // Then alphabetically
 
-    override fun submitList(list: List<Game>?) {
-        super.submitList(list?.sortedWith(gameComparator))
+    fun submitGameList(games: List<Game>) {
+        val preferences = PreferenceManager.getDefaultSharedPreferences(LimeApplication.appContext)
+        val sortedGames = games.sortedWith(gameComparator)
+
+        val items = mutableListOf<GameListItem>()
+        var hasFavorites = false
+        var hasNonFavorites = false
+
+        sortedGames.forEach { game ->
+            val isFavorite = preferences.getBoolean("favorite_${game.titleId}", false)
+            if (isFavorite) hasFavorites = true
+            if (!isFavorite) hasNonFavorites = true
+            items.add(GameListItem.GameItem(game))
+        }
+
+        if (hasFavorites && hasNonFavorites) {
+            val separatorIndex = items.indexOfFirst {
+                it is GameListItem.GameItem &&
+                !preferences.getBoolean("favorite_${it.game.titleId}", false)
+            }
+            items.add(separatorIndex, GameListItem.Separator)
+        }
+
+        submitList(items)
     }
+
+    inner class SeparatorViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
+
 }
