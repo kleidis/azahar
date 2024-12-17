@@ -6,6 +6,7 @@ package io.github.lime3ds.android.fragments
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.os.Bundle
@@ -15,6 +16,7 @@ import android.view.ViewGroup
 import android.view.ViewGroup.MarginLayoutParams
 import android.view.inputmethod.InputMethodManager
 import android.widget.PopupMenu
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -41,6 +43,7 @@ import io.github.lime3ds.android.adapters.GameAdapter
 import io.github.lime3ds.android.databinding.FragmentGamesBinding
 import io.github.lime3ds.android.features.settings.model.Settings
 import io.github.lime3ds.android.model.Game
+import io.github.lime3ds.android.utils.GameHelper
 import io.github.lime3ds.android.viewmodel.GamesViewModel
 import io.github.lime3ds.android.viewmodel.HomeViewModel
 import java.time.temporal.ChronoField
@@ -60,6 +63,25 @@ class GamesFragment : Fragment() {
     private val homeViewModel: HomeViewModel by activityViewModels()
 
     private lateinit var preferences: SharedPreferences
+
+    // TO BE REPLACED WITH MULTIPLE GAME FOLDER SUPPORT SOON
+    private val getGamesDirectory =
+        registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { result ->
+            if (result == null) {
+                return@registerForActivityResult
+            }
+
+            requireContext().contentResolver.takePersistableUriPermission(
+                result,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+
+            preferences.edit()
+                .putString(GameHelper.KEY_GAME_PATH, result.toString())
+                .apply()
+
+            homeViewModel.setGamesDir(requireActivity(), result.path!!)
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -183,6 +205,10 @@ class GamesFragment : Fragment() {
 
         setInsets()
         setupTopView()
+
+        binding.addDirectory.setOnClickListener {
+            getGamesDirectory.launch(Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).data)
+        }
     }
 
     override fun onDestroyView() {
