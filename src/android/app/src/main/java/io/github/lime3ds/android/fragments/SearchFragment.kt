@@ -131,7 +131,6 @@ class SearchFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        homeViewModel.setNavigationVisibility(visible = true, animated = true)
         homeViewModel.setStatusBarShadeVisibility(visible = true)
     }
 

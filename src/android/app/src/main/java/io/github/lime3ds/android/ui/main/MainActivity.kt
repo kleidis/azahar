@@ -118,11 +118,6 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
             supportFragmentManager.findFragmentById(R.id.fragment_container) as NavHostFragment
         setUpNavigation(navHostFragment.navController)
 
-        // Prevent statusBarShade from being drawn for a short time on recreation if set to hidden
-        if (!homeViewModel.navigationVisible.value.first) {
-            binding.statusBarShade.visibility = View.INVISIBLE
-        }
-
         lifecycleScope.apply {
             launch {
                 repeatOnLifecycle(Lifecycle.State.CREATED) {
@@ -193,7 +188,7 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
                 interpolator = PathInterpolator(0.05f, 0.7f, 0.1f, 1f)
             } else {
                 duration = 300
-                translationY(binding.navigationView.height.toFloat() * -2)
+                translationY(binding.statusBarShade.height.toFloat() * -2)
                 interpolator = PathInterpolator(0.3f, 0f, 0.8f, 0.15f)
             }
         }.withEndAction {
