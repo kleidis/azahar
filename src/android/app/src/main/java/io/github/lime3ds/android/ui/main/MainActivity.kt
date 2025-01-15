@@ -40,6 +40,7 @@ import io.github.lime3ds.android.R
 import io.github.lime3ds.android.activities.EmulationActivity
 import io.github.lime3ds.android.contracts.OpenFileResultContract
 import io.github.lime3ds.android.databinding.ActivityMainBinding
+import io.github.lime3ds.android.dialogs.NetPlayDialog
 import io.github.lime3ds.android.features.settings.model.Settings
 import io.github.lime3ds.android.features.settings.model.SettingsViewModel
 import io.github.lime3ds.android.features.settings.ui.SettingsActivity
@@ -169,6 +170,11 @@ class MainActivity : AppCompatActivity(), ThemeProvider {
 
     override fun onDestroy() {
         super.onDestroy()
+    }
+
+    fun displayMultiplayerDialog() {
+        val dialog = NetPlayDialog(this)
+        dialog.show()
     }
 
     override fun setTheme(resId: Int) {

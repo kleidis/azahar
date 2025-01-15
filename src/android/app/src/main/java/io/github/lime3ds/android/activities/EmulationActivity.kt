@@ -31,6 +31,7 @@ import io.github.lime3ds.android.R
 import io.github.lime3ds.android.camera.StillImageCameraHelper.OnFilePickerResult
 import io.github.lime3ds.android.contracts.OpenFileResultContract
 import io.github.lime3ds.android.databinding.ActivityEmulationBinding
+import io.github.lime3ds.android.dialogs.NetPlayDialog
 import io.github.lime3ds.android.display.ScreenAdjustmentUtil
 import io.github.lime3ds.android.features.hotkeys.HotkeyUtility
 import io.github.lime3ds.android.features.settings.model.BooleanSetting
@@ -45,6 +46,7 @@ import io.github.lime3ds.android.utils.EmulationLifecycleUtil
 import io.github.lime3ds.android.utils.EmulationMenuSettings
 import io.github.lime3ds.android.utils.ThemeUtil
 import io.github.lime3ds.android.viewmodel.EmulationViewModel
+import io.github.lime3ds.android.utils.NetPlayManager
 
 class EmulationActivity : AppCompatActivity() {
     private val preferences: SharedPreferences
@@ -192,6 +194,15 @@ class EmulationActivity : AppCompatActivity() {
             getString(R.string.emulation_menu_help),
             Toast.LENGTH_LONG
         ).show()
+    }
+
+    fun displayMultiplayerDialog() {
+        val dialog = NetPlayDialog(this)
+        dialog.show()
+    }
+
+    fun addNetPlayMessages(type: Int, msg: String) {
+        NetPlayManager.addNetPlayMessage(type, msg)
     }
 
     private fun enableFullscreenImmersive() {
