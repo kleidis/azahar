@@ -336,15 +336,15 @@ class GamesFragment : Fragment() {
 
         // Set checked state based on current filter
         when (currentFilter) {
+            R.id.alphabetical -> popup.menu.findItem(R.id.alphabetical).isChecked = true
             R.id.filter_recently_played -> popup.menu.findItem(R.id.filter_recently_played).isChecked = true
             R.id.filter_recently_added -> popup.menu.findItem(R.id.filter_recently_added).isChecked = true
             R.id.filter_installed -> popup.menu.findItem(R.id.filter_installed).isChecked = true
         }
 
         popup.setOnMenuItemClickListener { item ->
-            currentFilter = if (item.isChecked) View.NO_ID else item.itemId
+            currentFilter = item.itemId
             preferences.edit().putInt(PREF_SORT_TYPE, currentFilter).apply()
-            item.isChecked = !item.isChecked
             filterAndSearch()
             true
         }
@@ -388,6 +388,7 @@ class GamesFragment : Fragment() {
 
     private fun filterAndSearch(baseList: List<Game> = gamesViewModel.games.value) {
         val filteredList: List<Game> = when (currentFilter) {
+            R.id.alphabetical -> baseList.sortedBy { it.title }
             R.id.filter_recently_played -> {
                 baseList.filter {
                     val lastPlayedTime = preferences.getLong(it.keyLastPlayedTime, 0L)
