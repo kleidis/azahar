@@ -1212,13 +1212,15 @@ class EmulationFragment : Fragment(), SurfaceHolder.Callback, Choreographer.Fram
     }
 
     private fun getBatteryTemperature(): Float {
-        return try {
-            val intent = requireContext().registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
-                ?: return 0f
-            val temp = intent.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0)
-            temp / 10.0f
+        try {
+            val batteryIntent = requireContext().registerReceiver(null, IntentFilter(Intent.ACTION_BATTERY_CHANGED))
+            // Temperature in tenths of a degree Celsius
+            val temperature = batteryIntent?.getIntExtra(BatteryManager.EXTRA_TEMPERATURE, 0) ?: 0
+            // Convert to degrees Celsius
+            return temperature / 10.0f
         } catch (e: Exception) {
-            0f
+            Log.error("[EmulationFragment] Failed to get battery temperature: ${e.message}")
+            return 0.0f
         }
     }
 
