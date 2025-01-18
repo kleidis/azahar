@@ -4,22 +4,22 @@
 
 package io.github.lime3ds.android.adapters
 
-import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.content.pm.ShortcutInfo
+import android.content.pm.ShortcutManager
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.SystemClock
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.content.Context
-import android.content.Intent
-import android.widget.TextView
 import android.widget.ImageView
+import android.widget.PopupMenu
+import android.widget.TextView
 import android.widget.Toast
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.Bitmap
-import android.content.pm.ShortcutInfo
-import android.content.pm.ShortcutManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModelProvider
@@ -29,32 +29,25 @@ import androidx.recyclerview.widget.AsyncDifferConfig
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import android.graphics.drawable.Icon
-import android.util.Log
-import android.widget.PopupMenu
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.CoroutineScope
-import com.google.android.material.color.MaterialColors
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.color.MaterialColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.github.lime3ds.android.HomeNavigationDirections
 import io.github.lime3ds.android.LimeApplication
-import io.github.lime3ds.android.NativeLibrary
 import io.github.lime3ds.android.R
 import io.github.lime3ds.android.adapters.GameAdapter.GameViewHolder
 import io.github.lime3ds.android.databinding.CardGameBinding
 import io.github.lime3ds.android.features.cheats.ui.CheatsFragmentDirections
+import io.github.lime3ds.android.fragments.IndeterminateProgressDialogFragment
 import io.github.lime3ds.android.model.Game
+import io.github.lime3ds.android.utils.FileUtil
 import io.github.lime3ds.android.utils.GameIconUtils
 import io.github.lime3ds.android.viewmodel.GamesViewModel
-import io.github.lime3ds.android.features.settings.ui.SettingsActivity
-import io.github.lime3ds.android.features.settings.utils.SettingsFile
-import io.github.lime3ds.android.fragments.IndeterminateProgressDialogFragment
-import io.github.lime3ds.android.utils.DirectoryInitialization.userDirectory
-import io.github.lime3ds.android.utils.FileUtil
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class GameAdapter(private val activity: AppCompatActivity, private val inflater: LayoutInflater) :
     ListAdapter<Game, GameViewHolder>(AsyncDifferConfig.Builder(DiffCallback()).build()),
@@ -212,15 +205,28 @@ class GameAdapter(private val activity: AppCompatActivity, private val inflater:
         }
     }
 
-    private fun getGameDirectories(game: Game) = object {
-        val gameDir = game.path.substringBeforeLast("/")
-        val saveDir = "sdmc/Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/${String.format("%016x", game.titleId).lowercase().substring(0, 8)}/${String.format("%016x", game.titleId).lowercase().substring(8)}/data/00000001"
-        val modsDir = "load/mods/${String.format("%016X", game.titleId)}"
-        val texturesDir = "load/textures/${String.format("%016X", game.titleId)}"
-        val appDir = game.path.substringBeforeLast("/").split("/").filter { it.isNotEmpty() }.joinToString("/")
-        val dlcDir = "sdmc/Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/0004008c/${String.format("%016x", game.titleId).lowercase().substring(8)}/content"
-        val updatesDir = "sdmc/Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/0004000e/${String.format("%016x", game.titleId).lowercase().substring(8)}/content"
-        val extraDir = "sdmc/Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/${String.format("%016X", game.titleId).substring(8, 14).padStart(8, '0')}"
+    private data class GameDirectories(
+        val gameDir: String,
+        val saveDir: String,
+        val modsDir: String,
+        val texturesDir: String,
+        val appDir: String,
+        val dlcDir: String,
+        val updatesDir: String,
+        val extraDir: String
+    )
+
+    private fun getGameDirectories(game: Game): GameDirectories {
+        return GameDirectories(
+            gameDir = game.path.substringBeforeLast("/"),
+            saveDir = "sdmc/Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/${String.format("%016x", game.titleId).lowercase().substring(0, 8)}/${String.format("%016x", game.titleId).lowercase().substring(8)}/data/00000001",
+            modsDir = "load/mods/${String.format("%016X", game.titleId)}",
+            texturesDir = "load/textures/${String.format("%016X", game.titleId)}",
+            appDir = game.path.substringBeforeLast("/").split("/").filter { it.isNotEmpty() }.joinToString("/"),
+            dlcDir = "sdmc/Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/0004008c/${String.format("%016x", game.titleId).lowercase().substring(8)}/content",
+            updatesDir = "sdmc/Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/title/0004000e/${String.format("%016x", game.titleId).lowercase().substring(8)}/content",
+            extraDir = "sdmc/Nintendo 3DS/00000000000000000000000000000000/00000000000000000000000000000000/extdata/00000000/${String.format("%016X", game.titleId).substring(8, 14).padStart(8, '0')}"
+        )
     }
 
     private fun showOpenContextMenu(view: View, game: Game) {
