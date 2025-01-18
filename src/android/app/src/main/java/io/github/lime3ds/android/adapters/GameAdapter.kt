@@ -4,20 +4,20 @@
 
 package io.github.lime3ds.android.adapters
 
+import android.content.Context
+import android.content.pm.ShortcutInfo
+import android.content.pm.ShortcutManager
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Icon
 import android.net.Uri
 import android.os.SystemClock
 import android.text.TextUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.content.Context
-import android.widget.TextView
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.Bitmap
-import android.content.pm.ShortcutInfo
-import android.content.pm.ShortcutManager
 import androidx.appcompat.app.AppCompatActivity
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.ViewModelProvider
@@ -27,28 +27,24 @@ import androidx.recyclerview.widget.AsyncDifferConfig
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import android.graphics.drawable.Icon
 import androidx.viewbinding.ViewBinding
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.CoroutineScope
-import com.google.android.material.color.MaterialColors
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.color.MaterialColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.github.lime3ds.android.HomeNavigationDirections
 import io.github.lime3ds.android.LimeApplication
 import io.github.lime3ds.android.R
-import io.github.lime3ds.android.adapters.GameAdapter.GameViewHolder
 import io.github.lime3ds.android.databinding.CardGameBigBinding
 import io.github.lime3ds.android.databinding.CardGameBinding
 import io.github.lime3ds.android.features.cheats.ui.CheatsFragmentDirections
 import io.github.lime3ds.android.model.Game
 import io.github.lime3ds.android.utils.GameIconUtils
 import io.github.lime3ds.android.viewmodel.GamesViewModel
-import io.github.lime3ds.android.features.settings.ui.SettingsActivity
-import io.github.lime3ds.android.features.settings.utils.SettingsFile
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class GameAdapter(private val activity: AppCompatActivity, private val inflater: LayoutInflater) :
     ListAdapter<Game, GameAdapter.GameViewHolder>(AsyncDifferConfig.Builder(DiffCallback()).build()),
@@ -237,14 +233,9 @@ class GameAdapter(private val activity: AppCompatActivity, private val inflater:
                 View.VISIBLE
             }
             GameIconUtils.loadGameIcon(activity, game, binding.imageGameScreen)
-            setupMarquee(binding.textGameTitle)
-        }
-
-        private fun setupMarquee(textView: TextView) {
-            // Delay marquee by 3s
-            textView.postDelayed({
-                textView.ellipsize = TextUtils.TruncateAt.MARQUEE
-                textView.isSelected = true
+            binding.textGameTitle.postDelayed({
+                binding.textGameTitle.ellipsize = TextUtils.TruncateAt.MARQUEE
+                binding.textGameTitle.isSelected = true
             }, 3000)
         }
     }
